@@ -1,0 +1,11 @@
+variables:
+  - name: vmImage
+    value: ubuntu-latest
+  - name: templateFilePath
+    value: Components/BicepDemo/CARML/DemoResourceGroup/deploy.bicep
+  - name: parametersFilePathDev
+    value: Components/BicepDemo/CARML/DemoResourceGroup/Parameters/dev.parameters.json
+  - name: parametersFilePathProd
+    value: Components/BicepDemo/CARML/DemoResourceGroup/Parameters/prod.parameters.json
+  - name: serviceConnection
+    value: sp-titodoro-iacs

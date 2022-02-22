@@ -1,0 +1,76 @@
+name: $(resourceGroupName)-$(Build.BuildId)
+
+variables:
+  - template: pipeline.variables.yml
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - Components/BicepDemo/CARML/DemoResourceGroup/*
+
+stages:
+- stage: Validate
+  jobs:
+  - job: ValidateTemplate
+    displayName: Validate Template
+    pool:
+      ${{ if ne(variables.vmImage, '') }}:
+          vmImage: $(vmImage)
+      ${{ if ne(variables.poolName, '') }}:
+          name: $(poolName)
+    steps:
+      - task: AzurePowerShell@4
+        displayName: Validate template on $(resourceGroupName)
+        inputs:
+          azureSubscription: $(serviceConnection)
+          ScriptType: InlineScript
+          inline: |
+              $ValidationErrors = $null
+
+              $Location = "$(location)" -replace " ",""
+
+              $DeploymentInputs = @{
+                Location              = "$Location"
+                TemplateFile          = "$(Build.Repository.LocalPath)/$(templateFilePath)"
+                ParameterFile         = "$(Build.Repository.LocalPath)/$(parametersFilePathDev)"
+              }
+              
+              Test-AzDeployment @DeploymentInputs
+
+              if ($ValidationErrors)
+              {
+                Write-Error "Template is not valid."
+              }
+          azurePowerShellVersion: LatestVersion
+
+- stage: Deploy
+  jobs:
+  - job: DeployTemplate
+    displayName: Deploy Template
+    pool:
+      ${{ if ne(variables.vmImage, '') }}:
+          vmImage: $(vmImage)
+      ${{ if ne(variables.poolName, '') }}:
+          name: $(poolName)
+    steps:
+      - task: AzurePowerShell@4
+        displayName: Deploy template on $(resourceGroupName)
+        inputs:
+          azureSubscription: $(serviceConnection)
+          ScriptType: InlineScript
+          inline: |
+              $Location = "$(location)" -replace " ",""
+              
+              $DeploymentInputs = @{
+                Name                    = "$(resourceGroupName)-$(-join (Get-Date -Format yyyyMMddTHHMMssffffZ)[0..63])"
+                Location                = "$Location"
+                TemplateFile            = "$(Build.Repository.LocalPath)/$(templateFilePath)"
+                ParameterFile           = "$(Build.Repository.LocalPath)/$(parametersFilePathDev)"
+              }
+
+              New-AzDeployment @DeploymentInputs
+          azurePowerShellVersion: LatestVersion

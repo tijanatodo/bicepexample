@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceGroupParameters": {
+            "value": {
+                "enabled": true,
+                "name": "IaCDemoRg"
+            }
+        },
+        "networkSecurityGroupParameters": {
+            "value": {
+                "enabled": true,
+                "name": "IaCDemoNsg"
+            }
+        },
+        "vNetParameters": {
+            "value": {
+                "enabled": true,
+                "name": "IaCDemoVnet",
+                "addressPrefix": [
+                    "10.0.0.0/16"
+                ],
+                "subnets": [
+                    {
+                        "name": "PrimrarySubnet",
+                        "addressPrefix": "10.0.0.0/24",
+                        "networkSecurityGroupName": "IaCDemoNsg"
+                    },
+                    {
+                        "name": "SecondarySubnet",
+                        "addressPrefix": "10.0.1.0/24",
+                        "networkSecurityGroupName": "IaCDemoNsg"
+                    }
+                ]
+            }
+        }
+    }
+}
